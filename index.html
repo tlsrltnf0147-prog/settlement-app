@@ -478,6 +478,12 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
 
   const customSum = item.mode === 'custom'
     ? amounts.reduce((s, a, i) => s + (participants[i] ? a : 0), 0) : 0;
+
+  // 개별 입력 모드: 합계를 total에 자동 반영
+  useEffect(() => {
+    if (item.mode === 'custom') update({ total: customSum });
+  }, [customSum, item.mode]);
+
   const perPerson = activeIdx.length > 0 ? Math.floor((item.total || 0) / activeIdx.length) : 0;
 
   return (
@@ -497,7 +503,13 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
           <button className={item.mode === 'custom' ? 'is-active' : ''} onClick={() => update({ mode: 'custom' })}>개별 입력</button>
         </div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flex: 1, justifyContent: 'flex-end' }}>
-          <AmountInput value={item.total} onChange={(n) => update({ total: n })} placeholder="0" />
+          {item.mode === 'custom' ? (
+            <span style={{ fontSize: 22, fontWeight: 800, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', color: 'var(--text)', padding: '4px 0' }}>
+              {fmt(customSum)}
+            </span>
+          ) : (
+            <AmountInput value={item.total} onChange={(n) => update({ total: n })} placeholder="0" />
+          )}
           <span className="item-card__total-suffix">원</span>
         </div>
       </div>
@@ -531,9 +543,9 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
               <span className="custom-amount-row__suffix">원</span>
             </div>
           ))}
-          <div className={`custom-sum-row ${customSum === item.total && item.total > 0 ? 'is-match' : (item.total > 0 ? 'is-mismatch' : '')}`}>
-            <span>합계 / 총금액</span>
-            <span><span className="tnum">{fmt(customSum)}</span> / <span className="tnum">{fmt(item.total)}</span>원</span>
+          <div className="custom-sum-row is-match">
+            <span>합계</span>
+            <span className="tnum">{fmt(customSum)}원</span>
           </div>
         </div>
       )}
