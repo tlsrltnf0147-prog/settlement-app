@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://settlement-web-22780.web.app/sitemap.xml
