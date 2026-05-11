@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3182F6">
+  <title>정산관리</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+/* === Toss-inspired Settlement App === */
+:root {
+  --primary: #3182F6;
+  --primary-soft: #E8F2FE;
+  --primary-strong: #1B64DA;
+  --bg: #F2F4F6;
+  --surface: #FFFFFF;
+  --surface-2: #F9FAFB;
+  --border: #E5E8EB;
+  --border-soft: #F2F4F6;
+  --text: #191F28;
+  --text-2: #4E5968;
+  --text-3: #8B95A1;
+  --text-4: #B0B8C1;
+  --danger: #F04452;
+  --positive: #00C2A8;
+  --radius-card: 16px;
+  --radius-input: 12px;
+  --radius-chip: 999px;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.03), 0 1px 0 rgba(0,0,0,0.02);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum';
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+button { font-family: inherit; cursor: pointer; }
+input, button, textarea { font-family: inherit; color: inherit; }
+
+/* === App Shell === */
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--surface);
+  position: relative;
+}
+@media (min-width: 768px) {
+  .app {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    min-height: calc(100vh - 48px);
+    border-radius: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.04), 0 1px 0 rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+}
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-header__title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
+.app-header__sub { font-size: 12px; color: var(--text-3); font-weight: 500; margin-top: 2px; white-space: nowrap; }
+.app-header__icon-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px; border: none; background: transparent;
+  display: grid; place-items: center; color: var(--text-2); transition: background 0.12s;
+}
+.app-header__icon-btn:hover { background: var(--bg); }
+.app-main { padding: 24px 20px 120px; }
+
+/* === Section === */
+.section { margin-bottom: 28px; }
+.section__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; padding: 0 4px; }
+.section__title { font-size: 13px; font-weight: 600; color: var(--text-3); letter-spacing: 0.02em; white-space: nowrap; }
+.section__sub-meta { font-size: 12px; font-weight: 600; color: var(--text-3); letter-spacing: 0; }
+
+/* === Capture mode === */
+.is-capturing { background: white; padding: 24px 20px; margin: 0 -20px; border-radius: 0; }
+.is-capturing .action-bar { display: none; }
+
+/* === Card === */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 18px; }
+.card + .card { margin-top: 12px; }
+.card--soft { background: var(--surface-2); border-color: var(--border-soft); }
+
+/* === Inputs === */
+.title-input {
+  width: 100%; border: none; background: transparent;
+  font-size: 26px; font-weight: 800; letter-spacing: -0.03em;
+  color: var(--text); outline: none; padding: 4px; margin: 0 -4px; border-radius: 8px;
+}
+.title-input:focus { background: var(--surface-2); }
+.title-input::placeholder { color: var(--text-4); }
+
+/* === Members === */
+.members { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-radius: var(--radius-chip); font-size: 14px; font-weight: 600;
+  background: var(--surface-2); color: var(--text-2); border: 1.5px solid transparent;
+  transition: all 0.12s; white-space: nowrap; cursor: pointer; user-select: none; flex-shrink: 0;
+}
+.chip--solid { background: var(--text); color: white; }
+.chip__close {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(0,0,0,0.06); color: var(--text-3); border: none; padding: 0;
+  margin-right: -4px; font-size: 0; cursor: pointer; transition: background 0.12s;
+}
+.chip__close:hover { background: rgba(0,0,0,0.12); color: var(--text); }
+.chip--solid .chip__close { background: rgba(255,255,255,0.18); color: white; }
+.chip--solid .chip__close:hover { background: rgba(255,255,255,0.3); }
+.chip-add {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-radius: var(--radius-chip); font-size: 14px; font-weight: 600;
+  background: transparent; color: var(--primary); border: 1.5px dashed var(--border);
+  transition: all 0.12s; white-space: nowrap; flex-shrink: 0;
+}
+.chip-add:hover { border-color: var(--primary); background: var(--primary-soft); }
+.member-add-input {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0 6px 0 14px;
+  border-radius: var(--radius-chip); background: var(--primary-soft); border: 1.5px solid var(--primary);
+}
+.member-add-input input {
+  border: none; background: transparent; outline: none; padding: 7px 0;
+  font-size: 14px; font-weight: 600; width: 80px; color: var(--text);
+}
+.member-add-input button {
+  border: none; background: var(--primary); color: white; width: 24px; height: 24px;
+  border-radius: 50%; display: grid; place-items: center; margin: 2px; padding: 0; font-size: 0;
+}
+
+/* === Item Cards === */
+.item-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: 16px 16px 14px; margin-bottom: 12px; transition: border-color 0.12s;
+}
+.item-card:focus-within { border-color: var(--primary); }
+.item-card__row1 { display: grid; grid-template-columns: 148px 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; }
+.item-card__date {
+  border: none; background: var(--surface-2); border-radius: 10px; padding: 10px 12px;
+  font-size: 13px; font-weight: 600; color: var(--text-2); outline: none;
+  font-feature-settings: 'tnum'; min-width: 0; width: 100%;
+}
+.item-card__date:focus { background: var(--primary-soft); color: var(--primary-strong); }
+.item-card__name {
+  border: none; background: transparent; outline: none; padding: 10px 0;
+  font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); width: 100%;
+}
+.item-card__name::placeholder { color: var(--text-4); }
+.item-card__total {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 6px 0 10px; border-bottom: 1px solid var(--border-soft); margin-bottom: 12px;
+}
+.item-card__total-label { font-size: 13px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
+.item-card__total-input {
+  border: none; background: transparent; outline: none; text-align: right;
+  font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em; color: var(--text); padding: 4px 0; width: 100%;
+}
+.item-card__total-input::placeholder { color: var(--text-4); }
+.item-card__total-suffix { font-size: 15px; font-weight: 700; color: var(--text-3); white-space: nowrap; }
+.item-card__participants { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip-mini {
+  display: inline-flex; align-items: center; padding: 6px 12px; border-radius: var(--radius-chip);
+  font-size: 13px; font-weight: 600; background: var(--surface-2); color: var(--text-3);
+  border: 1.5px solid transparent; transition: all 0.12s; cursor: pointer; user-select: none;
+  white-space: nowrap; flex-shrink: 0;
+}
+.chip-mini--active { background: var(--primary-soft); color: var(--primary-strong); }
+.chip-mini--all { background: transparent; color: var(--text-3); border-color: var(--border); }
+.chip-mini--all:hover { color: var(--primary); border-color: var(--primary); }
+.seg-control { display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.seg-control button {
+  border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 700;
+  color: var(--text-3); border-radius: 8px; letter-spacing: -0.01em; transition: all 0.12s; white-space: nowrap;
+}
+.seg-control button.is-active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.icon-btn-ghost {
+  border: none; background: transparent; width: 32px; height: 32px; border-radius: 8px;
+  color: var(--text-4); display: grid; place-items: center;
+}
+.icon-btn-ghost:hover { background: var(--surface-2); color: var(--danger); }
+.per-person-readout {
+  margin-top: 10px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px;
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; white-space: nowrap;
+}
+.per-person-readout strong { font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.custom-amounts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding: 12px; background: var(--surface-2); border-radius: 12px; }
+.custom-amount-row { display: grid; grid-template-columns: 80px 1fr auto; gap: 10px; align-items: center; }
+.custom-amount-row__name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.custom-amount-row__input {
+  border: 1.5px solid transparent; background: var(--surface); border-radius: 8px; padding: 8px 10px;
+  font-size: 14px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; outline: none;
+}
+.custom-amount-row__input:focus { border-color: var(--primary); }
+.custom-amount-row__suffix { font-size: 12px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
+.custom-sum-row {
+  display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;
+  margin-top: 4px; padding: 4px 4px 0; border-top: 1px dashed var(--border);
+}
+.custom-sum-row.is-mismatch { color: var(--danger); }
+.custom-sum-row.is-match { color: var(--positive); }
+.add-item-btn {
+  width: 100%; border: 1.5px dashed var(--border); background: transparent;
+  border-radius: var(--radius-card); padding: 18px; font-size: 14px; font-weight: 700;
+  color: var(--text-3); display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.12s; margin-top: 4px;
+}
+.add-item-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+/* === Result === */
+.summary-card {
+  background: linear-gradient(180deg, #1B64DA 0%, var(--primary) 100%);
+  color: white; border-radius: 20px; padding: 22px; margin-bottom: 16px;
+}
+.summary-card__label { font-size: 13px; font-weight: 600; opacity: 0.85; }
+.summary-card__total { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.summary-card__meta {
+  display: flex; gap: 18px; margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 600;
+}
+.summary-card__meta div { opacity: 0.9; }
+.summary-card__meta strong { font-weight: 800; opacity: 1; display: block; font-size: 15px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.payer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 4px; }
+.payer-row__label { font-size: 13px; font-weight: 600; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
+.transfer-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px 18px; display: flex; align-items: center; gap: 14px;
+}
+.transfer-card + .transfer-card { margin-top: 8px; }
+.transfer-card__avatar {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--primary-soft); color: var(--primary);
+  display: grid; place-items: center; font-weight: 800; font-size: 16px; flex-shrink: 0; letter-spacing: -0.02em;
+}
+.transfer-card__body { flex: 1; min-width: 0; }
+.transfer-card__name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.transfer-card__hint { font-size: 12px; font-weight: 500; color: var(--text-3); margin-top: 2px; white-space: nowrap; }
+.transfer-card__amount { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--text); white-space: nowrap; }
+.transfer-card--paid { background: var(--surface-2); border-style: dashed; }
+.transfer-card--paid .transfer-card__amount { color: var(--text-3); }
+.transfer-card--paid .transfer-card__avatar { background: var(--text); color: white; }
+
+/* === Action bar === */
+.action-bar {
+  position: sticky; bottom: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, var(--surface) 30%);
+  padding: 24px 20px 20px; margin: 24px -20px -120px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.btn-primary {
+  width: 100%; background: var(--primary); color: white; border: none; border-radius: 14px;
+  padding: 16px; font-size: 16px; font-weight: 800; letter-spacing: -0.01em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: filter 0.12s, transform 0.06s, background 0.12s;
+}
+.btn-primary:hover { background: var(--primary-strong); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-secondary {
+  width: 100%; background: var(--surface-2); color: var(--text-2); border: none; border-radius: 14px;
+  padding: 13px 16px; font-size: 14px; font-weight: 700; letter-spacing: -0.01em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-secondary:hover { background: var(--border-soft); color: var(--text); }
+
+/* === Toast === */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(0);
+  background: rgba(25,31,40,0.94); color: white; padding: 12px 18px; border-radius: 12px;
+  font-size: 13px; font-weight: 600; z-index: 100; pointer-events: none;
+  display: flex; align-items: center; gap: 8px; animation: toast-in 0.18s ease-out;
+}
+@keyframes toast-in {
+  from { transform: translateX(-50%) translateY(8px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.empty { text-align: center; padding: 32px 16px; color: var(--text-3); font-size: 14px; font-weight: 500; }
+.empty strong { display: block; color: var(--text-2); font-weight: 700; margin-bottom: 4px; }
+.tnum { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script type="text/babel">
+/* global React, ReactDOM, LZString */
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+
+/* ---------- helpers ---------- */
+const fmt = (n) => (Number.isFinite(n) ? Math.round(n).toLocaleString('ko-KR') : '0');
+const parseAmount = (s) => {
+  if (typeof s === 'number') return s;
+  if (!s) return 0;
+  const v = parseInt(String(s).replace(/[^\d]/g, ''), 10);
+  return Number.isFinite(v) ? v : 0;
+};
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+const initials = (name) => name ? name.trim().slice(0, 1) : '?';
+
+function evenSplit(total, n) {
+  if (n <= 0) return [];
+  const base = Math.floor(total / n);
+  const remainder = total - base * n;
+  return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
+}
+
+/* ---------- URL state ---------- */
+function encodeState(state) {
+  const c = {
+    t: state.title || '',
+    m: state.members,
+    p: state.payerIdx,
+    i: state.items.map(it => ({
+      d: it.date, n: it.name, t: it.total, m: it.mode, p: it.participants, a: it.amounts,
+    })),
+  };
+  return LZString.compressToEncodedURIComponent(JSON.stringify(c));
+}
+function decodeState(s) {
+  try {
+    const c = JSON.parse(LZString.decompressFromEncodedURIComponent(s));
+    if (!c) return null;
+    return {
+      title: c.t || '',
+      members: c.m || [],
+      payerIdx: typeof c.p === 'number' ? c.p : 0,
+      items: (c.i || []).map(it => ({
+        date: it.d, name: it.n, total: it.t || 0, mode: it.m || 'even',
+        participants: it.p || [], amounts: it.a || [],
+      })),
+    };
+  } catch { return null; }
+}
+
+/* ---------- Icons ---------- */
+const I = {
+  plus:  (s=16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>,
+  close: (s=10) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>,
+  trash: (s=16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>,
+  check: (s=14) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>,
+  copy:  (s=16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>,
+  download: (s=16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v12M6 12l6 6 6-6M5 20h14"/></svg>,
+  reset: (s=16) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>,
+};
+
+/* ---------- Components ---------- */
+function AmountInput({ value, onChange, placeholder, autoFocus, className = 'item-card__total-input' }) {
+  const [text, setText] = useState(value ? fmt(value) : '');
+  useEffect(() => { setText(value ? fmt(value) : ''); }, [value]);
+  return (
+    <input
+      className={className}
+      inputMode="numeric"
+      placeholder={placeholder || '0'}
+      autoFocus={autoFocus}
+      value={text}
+      onChange={(e) => {
+        const n = parseAmount(e.target.value);
+        setText(n ? fmt(n) : '');
+        onChange(n);
+      }}
+    />
+  );
+}
+
+function MemberChip({ name, onRemove }) {
+  return (
+    <span className="chip chip--solid">
+      {name}
+      <button className="chip__close" onClick={onRemove} aria-label="제거">{I.close(8)}</button>
+    </span>
+  );
+}
+
+function MemberSection({ members, onAdd, onRemove }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef(null);
+  useEffect(() => { if (adding) inputRef.current?.focus(); }, [adding]);
+  const commit = () => {
+    const v = draft.trim();
+    if (v && !members.includes(v)) onAdd(v);
+    setDraft(''); setAdding(false);
+  };
+  return (
+    <div className="section">
+      <div className="section__head">
+        <span className="section__title">참여자 · {members.length}명</span>
+      </div>
+      <div className="members">
+        {members.map((m, i) => (
+          <MemberChip key={`${m}-${i}`} name={m} onRemove={() => onRemove(i)} />
+        ))}
+        {adding ? (
+          <span className="member-add-input">
+            <input
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commit();
+                if (e.key === 'Escape') { setDraft(''); setAdding(false); }
+              }}
+              onBlur={commit}
+              placeholder="이름"
+              maxLength={8}
+            />
+            <button onMouseDown={(e) => e.preventDefault()} onClick={commit}>{I.check(12)}</button>
+          </span>
+        ) : (
+          <button className="chip-add" onClick={() => setAdding(true)}>{I.plus(14)} 추가</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ItemCard({ item, idx, members, onChange, onDelete }) {
+  const update = (patch) => onChange({ ...item, ...patch });
+
+  const participants = useMemo(() => {
+    const arr = [...(item.participants || [])];
+    while (arr.length < members.length) arr.push(true);
+    return arr.slice(0, members.length);
+  }, [item.participants, members.length]);
+
+  const amounts = useMemo(() => {
+    const arr = [...(item.amounts || [])];
+    while (arr.length < members.length) arr.push(0);
+    return arr.slice(0, members.length);
+  }, [item.amounts, members.length]);
+
+  const activeIdx = participants.map((p, i) => p ? i : -1).filter(i => i >= 0);
+  const allActive = activeIdx.length === members.length && members.length > 0;
+
+  const toggleParticipant = (i) => {
+    const next = [...participants]; next[i] = !next[i]; update({ participants: next });
+  };
+  const toggleAll = () => update({ participants: members.map(() => !allActive) });
+
+  const splits = useMemo(() => {
+    if (item.mode === 'custom') return amounts.map((a, i) => participants[i] ? a : 0);
+    const splitVals = evenSplit(item.total || 0, activeIdx.length);
+    const arr = members.map(() => 0);
+    activeIdx.forEach((mi, k) => { arr[mi] = splitVals[k]; });
+    return arr;
+  }, [item.mode, item.total, amounts, participants, activeIdx, members.length]);
+
+  const customSum = item.mode === 'custom'
+    ? amounts.reduce((s, a, i) => s + (participants[i] ? a : 0), 0) : 0;
+  const perPerson = activeIdx.length > 0 ? Math.floor((item.total || 0) / activeIdx.length) : 0;
+
+  return (
+    <div className="item-card">
+      <div className="item-card__row1">
+        <input className="item-card__date" type="date" value={item.date}
+          onChange={(e) => update({ date: e.target.value })} />
+        <input className="item-card__name" placeholder="내용 (예: 점심)" value={item.name}
+          onChange={(e) => update({ name: e.target.value })} />
+        <button className="icon-btn-ghost" onClick={onDelete} aria-label="삭제">{I.trash(16)}</button>
+      </div>
+
+      <div className="item-card__total">
+        <span className="item-card__total-label">총액</span>
+        <div className="seg-control">
+          <button className={item.mode === 'even' ? 'is-active' : ''} onClick={() => update({ mode: 'even' })}>1/n 균등</button>
+          <button className={item.mode === 'custom' ? 'is-active' : ''} onClick={() => update({ mode: 'custom' })}>개별 입력</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flex: 1, justifyContent: 'flex-end' }}>
+          <AmountInput value={item.total} onChange={(n) => update({ total: n })} placeholder="0" />
+          <span className="item-card__total-suffix">원</span>
+        </div>
+      </div>
+
+      {members.length > 0 && (
+        <div className="item-card__participants">
+          {members.map((m, i) => (
+            <span key={`${m}-${i}`} className={`chip-mini ${participants[i] ? 'chip-mini--active' : ''}`}
+              onClick={() => toggleParticipant(i)}>{m}</span>
+          ))}
+          <span className="chip-mini chip-mini--all" onClick={toggleAll}>
+            {allActive ? '전체 해제' : '전체 선택'}
+          </span>
+        </div>
+      )}
+
+      {item.mode === 'even' && activeIdx.length > 0 && (
+        <div className="per-person-readout">
+          <span>1인당 ({activeIdx.length}명)</span>
+          <strong>{fmt(perPerson)}원</strong>
+        </div>
+      )}
+
+      {item.mode === 'custom' && activeIdx.length > 0 && (
+        <div className="custom-amounts">
+          {activeIdx.map((mi) => (
+            <div key={mi} className="custom-amount-row">
+              <span className="custom-amount-row__name">{members[mi]}</span>
+              <AmountInput className="custom-amount-row__input" value={amounts[mi]}
+                onChange={(n) => { const next = [...amounts]; next[mi] = n; update({ amounts: next }); }} />
+              <span className="custom-amount-row__suffix">원</span>
+            </div>
+          ))}
+          <div className={`custom-sum-row ${customSum === item.total && item.total > 0 ? 'is-match' : (item.total > 0 ? 'is-mismatch' : '')}`}>
+            <span>합계 / 총금액</span>
+            <span><span className="tnum">{fmt(customSum)}</span> / <span className="tnum">{fmt(item.total)}</span>원</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TransferCard({ name, amount, isPayer, payerName }) {
+  if (isPayer) {
+    return (
+      <div className="transfer-card transfer-card--paid">
+        <div className="transfer-card__avatar">{initials(name)}</div>
+        <div className="transfer-card__body">
+          <div className="transfer-card__name">{name}</div>
+          <div className="transfer-card__hint">결제자 · 받을 금액</div>
+        </div>
+        <div className="transfer-card__amount">+{fmt(amount)}원</div>
+      </div>
+    );
+  }
+  return (
+    <div className="transfer-card">
+      <div className="transfer-card__avatar">{initials(name)}</div>
+      <div className="transfer-card__body">
+        <div className="transfer-card__name">{name}</div>
+        <div className="transfer-card__hint">{payerName}님께 송금</div>
+      </div>
+      <div className="transfer-card__amount">{fmt(amount)}원</div>
+    </div>
+  );
+}
+
+/* ---------- Main App ---------- */
+function App() {
+  const [state, setState] = useState(() => {
+    const hash = window.location.hash.slice(1);
+    const params = new URLSearchParams(hash);
+    const s = params.get('s');
+    if (s) { const decoded = decodeState(s); if (decoded) return decoded; }
+    return { title: '', members: [], payerIdx: 0, items: [] };
+  });
+
+  const [toast, setToast] = useState(null);
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
+
+  // Sync URL hash (debounced)
+  useEffect(() => {
+    const h = setTimeout(() => {
+      const encoded = encodeState(state);
+      const newHash = `s=${encoded}`;
+      if (window.location.hash.slice(1) !== newHash) history.replaceState(null, '', `#${newHash}`);
+    }, 300);
+    return () => clearTimeout(h);
+  }, [state]);
+
+  const update = (patch) => setState(s => ({ ...s, ...patch }));
+
+  const addMember = (name) => {
+    setState(s => ({
+      ...s,
+      members: [...s.members, name],
+      items: s.items.map(it => ({
+        ...it,
+        participants: [...(it.participants || []), true],
+        amounts: [...(it.amounts || []), 0],
+      })),
+    }));
+  };
+  const removeMember = (i) => {
+    setState(s => {
+      if (s.members.length <= 1) return s;
+      const newMembers = s.members.filter((_, j) => j !== i);
+      const items = s.items.map(it => ({
+        ...it,
+        participants: (it.participants || []).filter((_, j) => j !== i),
+        amounts: (it.amounts || []).filter((_, j) => j !== i),
+      }));
+      const payerIdx = i < s.payerIdx ? s.payerIdx - 1 : (s.payerIdx >= newMembers.length ? 0 : s.payerIdx);
+      return { ...s, members: newMembers, items, payerIdx };
+    });
+  };
+
+  const addItem = () => {
+    setState(s => ({
+      ...s,
+      items: [...s.items, {
+        date: s.items[s.items.length - 1]?.date || todayStr(),
+        name: '', total: 0, mode: 'even',
+        participants: s.members.map(() => true),
+        amounts: s.members.map(() => 0),
+      }],
+    }));
+  };
+  const updateItem = (idx, item) => setState(s => ({ ...s, items: s.items.map((it, i) => i === idx ? item : it) }));
+  const deleteItem = (idx) => setState(s => ({ ...s, items: s.items.filter((_, i) => i !== idx) }));
+
+  const perPersonTotals = useMemo(() => {
+    const totals = state.members.map(() => 0);
+    state.items.forEach(item => {
+      const participants = (item.participants || []).slice(0, state.members.length);
+      const amounts = (item.amounts || []).slice(0, state.members.length);
+      const activeIdx = participants.map((p, i) => p ? i : -1).filter(i => i >= 0);
+      if (item.mode === 'custom') {
+        amounts.forEach((a, i) => { if (participants[i]) totals[i] += a; });
+      } else {
+        const splits = evenSplit(item.total || 0, activeIdx.length);
+        activeIdx.forEach((mi, k) => { totals[mi] += splits[k]; });
+      }
+    });
+    return totals;
+  }, [state.items, state.members]);
+
+  const grandTotal = perPersonTotals.reduce((a, b) => a + b, 0);
+
+  const shareUrl = useMemo(() => {
+    const base = window.location.origin + window.location.pathname;
+    return `${base}#s=${encodeState(state)}`;
+  }, [state]);
+
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(shareUrl); showToast('링크가 복사됐어요'); }
+    catch { showToast('복사 실패'); }
+  };
+
+  const resultRef = useRef(null);
+  const [saving, setSaving] = useState(false);
+  const saveImage = async () => {
+    if (!resultRef.current || !window.html2canvas) return;
+    setSaving(true);
+    try {
+      const node = resultRef.current;
+      node.classList.add('is-capturing');
+      const canvas = await window.html2canvas(node, { backgroundColor: '#FFFFFF', scale: 2, useCORS: true, logging: false });
+      node.classList.remove('is-capturing');
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(state.title || '정산').replace(/[\\/:*?"<>|]/g, '')}_${new Date().toISOString().slice(0,10)}.png`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('이미지로 저장됐어요');
+      }, 'image/png');
+    } catch(e) { console.error(e); showToast('저장 실패'); }
+    finally { setSaving(false); }
+  };
+
+  const reset = () => {
+    if (!confirm('전체를 초기화할까요?')) return;
+    setState({ title: '', members: [], payerIdx: 0, items: [] });
+  };
+
+  const dateRange = useMemo(() => {
+    const dates = state.items.map(i => i.date).filter(Boolean).sort();
+    if (dates.length === 0) return null;
+    if (dates[0] === dates[dates.length-1]) return dates[0];
+    return `${dates[0]} ~ ${dates[dates.length-1]}`;
+  }, [state.items]);
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <div>
+          <div className="app-header__title">정산관리</div>
+          {dateRange && <div className="app-header__sub">{dateRange} · {state.items.length}건</div>}
+        </div>
+        <button className="app-header__icon-btn" onClick={reset} aria-label="초기화" title="초기화">
+          {I.reset(18)}
+        </button>
+      </header>
+
+      <main className="app-main">
+        <div className="section">
+          <input className="title-input" placeholder="모임 제목" value={state.title}
+            onChange={(e) => update({ title: e.target.value })} />
+        </div>
+
+        <MemberSection members={state.members} onAdd={addMember} onRemove={removeMember} />
+
+        {state.members.length === 0 && (
+          <div className="card card--soft">
+            <div className="empty">
+              <strong>먼저 참여자를 추가해 주세요</strong>
+              위에서 이름을 입력하면 시작됩니다
+            </div>
+          </div>
+        )}
+
+        {state.members.length > 0 && (
+          <div className="section">
+            <div className="section__head">
+              <span className="section__title">정산 항목 · {state.items.length}건</span>
+            </div>
+            {state.items.map((item, i) => (
+              <ItemCard key={i} item={item} idx={i} members={state.members}
+                onChange={(it) => updateItem(i, it)} onDelete={() => deleteItem(i)} />
+            ))}
+            <button className="add-item-btn" onClick={addItem}>{I.plus(16)} 항목 추가</button>
+          </div>
+        )}
+
+        {state.members.length > 0 && state.items.length > 0 && grandTotal > 0 && (
+          <>
+            <div className="section" ref={resultRef}>
+              <div className="section__head">
+                <span className="section__title">정산 결과</span>
+                <span className="section__sub-meta tnum">{state.title}{dateRange ? ` · ${dateRange}` : ''}</span>
+              </div>
+
+              <div className="summary-card">
+                <div className="summary-card__label">총 정산 금액</div>
+                <div className="summary-card__total">{fmt(grandTotal)}원</div>
+                <div className="summary-card__meta">
+                  <div>참여자<strong>{state.members.length}명</strong></div>
+                  <div>항목<strong>{state.items.length}건</strong></div>
+                  <div>1인 평균<strong>{fmt(grandTotal / state.members.length)}원</strong></div>
+                </div>
+              </div>
+
+              <div className="payer-row">
+                <span className="payer-row__label">결제자</span>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {state.members.map((m, i) => (
+                    <span key={i} className={`chip-mini ${state.payerIdx === i ? 'chip-mini--active' : ''}`}
+                      onClick={() => update({ payerIdx: i })}>{m}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                {state.members.map((name, i) => (
+                  <TransferCard key={i} name={name}
+                    amount={i === state.payerIdx
+                      ? perPersonTotals.reduce((s, v, j) => j === state.payerIdx ? s : s + v, 0)
+                      : perPersonTotals[i]}
+                    isPayer={i === state.payerIdx}
+                    payerName={state.members[state.payerIdx]}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="action-bar">
+              <button className="btn-primary" onClick={saveImage} disabled={saving}>
+                {saving ? '저장 중...' : <>{I.download(16)} 결과 저장</>}
+              </button>
+              <button className="btn-secondary" onClick={copyLink}>
+                {I.copy(14)} 링크 복사
+              </button>
+            </div>
+          </>
+        )}
+      </main>
+
+      {toast && <div className="toast">{I.check(14)} {toast}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
