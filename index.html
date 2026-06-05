@@ -223,11 +223,13 @@ input, button, textarea { font-family: inherit; color: inherit; }
 }
 .per-person-readout strong { font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .custom-amounts { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding: 12px; background: var(--surface-2); border-radius: 12px; }
-.custom-amount-row { display: grid; grid-template-columns: minmax(60px, 80px) 1fr auto; gap: 8px; align-items: center; min-width: 0; }
-.custom-amount-row__name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.custom-amount-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-width: 0; font-size: 12px; font-weight: 600; }
+.custom-amount-row__name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; max-width: 40%; }
+.custom-amount-row__right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .custom-amount-row__input {
-  border: 1.5px solid transparent; background: var(--surface); border-radius: 8px; padding: 8px 10px;
-  font-size: 14px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; outline: none;
+  border: 1.5px solid transparent; background: var(--surface); border-radius: 8px; padding: 4px 8px;
+  font-size: 12px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; outline: none;
+  width: 90px; min-width: 0;
 }
 .custom-amount-row__input:focus { border-color: var(--primary); }
 .custom-amount-row__suffix { font-size: 12px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
@@ -554,9 +556,11 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
           {activeIdx.map((mi) => (
             <div key={mi} className="custom-amount-row">
               <span className="custom-amount-row__name">{members[mi]}</span>
-              <AmountInput className="custom-amount-row__input" value={amounts[mi]}
-                onChange={(n) => { const next = [...amounts]; next[mi] = n; update({ amounts: next }); }} />
-              <span className="custom-amount-row__suffix">원</span>
+              <div className="custom-amount-row__right">
+                <AmountInput className="custom-amount-row__input" value={amounts[mi]}
+                  onChange={(n) => { const next = [...amounts]; next[mi] = n; update({ amounts: next }); }} />
+                <span className="custom-amount-row__suffix">원</span>
+              </div>
             </div>
           ))}
           <div className="custom-sum-row is-match">
