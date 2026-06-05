@@ -572,29 +572,18 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
         </div>
       </div>
 
-      {/* 참여자 칩 (균등 모드에서만 표시) */}
-      {item.mode === 'even' && members.length > 0 && (
-        <div className="item-card__participants">
-          {members.map((m, i) => (
-            <span key={`${m}-${i}`} className={`chip-mini ${participants[i] ? 'chip-mini--active' : ''}`}
-              onClick={() => toggleParticipant(i)}>{m}</span>
-          ))}
-          <span className="chip-mini chip-mini--all" onClick={toggleAll}>
-            {allActive ? '전체 해제' : '전체 선택'}
-          </span>
-        </div>
-      )}
-
-      {/* 추가 입력 폼 (균등/개별 공통) */}
+      {/* 추가 입력 폼 */}
       {members.length > 0 && (
         <div className="item-add-form">
-          <select
-            className="item-add-form__select"
-            value={addMemberIdx}
-            onChange={(e) => setAddMemberIdx(Number(e.target.value))}
-          >
-            {members.map((m, i) => <option key={i} value={i}>{m}</option>)}
-          </select>
+          {item.mode === 'custom' && (
+            <select
+              className="item-add-form__select"
+              value={addMemberIdx}
+              onChange={(e) => setAddMemberIdx(Number(e.target.value))}
+            >
+              {members.map((m, i) => <option key={i} value={i}>{m}</option>)}
+            </select>
+          )}
           <input
             ref={addInputRef}
             className="item-add-form__input"
@@ -609,6 +598,19 @@ function ItemCard({ item, idx, members, onChange, onDelete }) {
           />
           <span className="item-add-form__suffix">원</span>
           <button className="item-add-form__btn" onClick={handleAdd}>{I.plus(12)} 추가</button>
+        </div>
+      )}
+
+      {/* 참여자 칩 (균등 모드에서만 표시) */}
+      {item.mode === 'even' && members.length > 0 && (
+        <div className="item-card__participants">
+          {members.map((m, i) => (
+            <span key={`${m}-${i}`} className={`chip-mini ${participants[i] ? 'chip-mini--active' : ''}`}
+              onClick={() => toggleParticipant(i)}>{m}</span>
+          ))}
+          <span className="chip-mini chip-mini--all" onClick={toggleAll}>
+            {allActive ? '전체 해제' : '전체 선택'}
+          </span>
         </div>
       )}
 
