@@ -253,14 +253,14 @@ input, button, textarea { font-family: inherit; color: inherit; }
 
 /* === Custom amounts list === */
 .custom-amounts { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding: 10px 12px; background: var(--surface-2); border-radius: 12px; overflow: hidden; }
-.custom-amount-row { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; font-weight: 600; }
+.custom-amount-row { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; font-size: 13px; font-weight: 600; }
 .custom-amount-row__name { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 80px; flex-shrink: 0; }
 .custom-amount-row__value { font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; text-align: right; margin-left: auto; }
-.custom-amount-row__right { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: flex-end; }
+.custom-amount-row__right { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; }
 .custom-amount-row__input {
   border: 1.5px solid transparent; background: var(--surface); border-radius: 8px; padding: 4px 8px;
   font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; outline: none;
-  flex: 1; min-width: 0;
+  min-width: 0; width: 0; flex: 1;
 }
 .custom-amount-row__input:focus { border-color: var(--primary); }
 .custom-amount-row__suffix { font-size: 13px; font-weight: 600; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
