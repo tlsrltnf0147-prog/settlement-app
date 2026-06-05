@@ -95,6 +95,10 @@ input, button, textarea { font-family: inherit; color: inherit; }
 }
 .app-header__title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
 .app-header__sub { font-size: 12px; color: var(--text-3); font-weight: 500; margin-top: 2px; white-space: nowrap; }
+.app-header__members { display: flex; flex-wrap: wrap; gap: 6px 12px; flex: 1; min-width: 0; overflow: hidden; }
+.app-header__member { font-size: 13px; font-weight: 600; color: var(--text-2); white-space: nowrap; display: flex; align-items: baseline; gap: 3px; }
+.app-header__member-name { color: var(--text-3); }
+.app-header__member-amount { color: var(--text); font-variant-numeric: tabular-nums; }
 .app-header__icon-btn {
   width: 40px; height: 40px;
   border-radius: 12px; border: none; background: transparent;
@@ -729,10 +733,21 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
-          <div className="app-header__title">정산Note</div>
-          {dateRange && <div className="app-header__sub">{dateRange} · {state.items.length}건</div>}
-        </div>
+        {state.members.length > 0 && grandTotal > 0 ? (
+          <div className="app-header__members">
+            {state.members.map((name, i) => (
+              <div key={i} className="app-header__member">
+                <span className="app-header__member-name">{name}</span>
+                <span className="app-header__member-amount">{fmt(perPersonTotals[i])}원</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <div className="app-header__title">정산Note</div>
+            {dateRange && <div className="app-header__sub">{dateRange} · {state.items.length}건</div>}
+          </div>
+        )}
         <button className="app-header__icon-btn" onClick={reset} aria-label="초기화" title="초기화">
           {I.reset(18)}
         </button>
